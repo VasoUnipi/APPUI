@@ -1,6 +1,6 @@
 package org.example.appui;
 import org.apache.commons.text.StringEscapeUtils;
-
+import javafx.geometry.Pos;
 import org.example.TriviaApiClient;
 import org.example.Questions;
 import org.example.Result;
@@ -17,10 +17,21 @@ public class TriviaGameApp extends Application {
 
     private TriviaApiClient apiClient = new TriviaApiClient();
     private Map<String, Integer> categoryMap = new HashMap<>();
-
+    private int totalScore = 0;
+    private int gamesPlayed = 0;
+    private int currentQuestionIndex = 0;
+    private Questions quizData;
+    private Stage quizStage;
+    private VBox quizLayout;
+    private VBox layout;
+    private Label questionLabel;
+    private ToggleGroup group;
+    private Button nextButton;
+    private VBox optionsBox;
     private ComboBox<String> categoryBox;
     private ComboBox<String> difficultyBox;
     private ComboBox<String> typeBox;
+    private Stage primaryStage;
     private TextField numberField;
     private Label scoreLabel;
     private int score = 0;
@@ -28,6 +39,7 @@ public class TriviaGameApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        this.primaryStage = primaryStage;
         primaryStage.setTitle("Trivia Game");
 
         Label titleLabel = new Label("Select Quiz Options");
@@ -82,8 +94,10 @@ public class TriviaGameApp extends Application {
 
         // Εμφάνιση σκορ
         scoreLabel = new Label("Score: 0");
-
+        layout = new VBox(15, titleLabel, categoryBox, difficultyBox, typeBox, numberField, startButton, scoreLabel);
+        layout.setAlignment(Pos.CENTER);
         VBox layout = new VBox(10, titleLabel, categoryBox, difficultyBox, typeBox, numberField, startButton, scoreLabel);
+        layout.setAlignment(Pos.CENTER);
         primaryStage.setScene(new Scene(layout, 400, 300));
         primaryStage.show();
     }
@@ -120,14 +134,8 @@ public class TriviaGameApp extends Application {
             e.printStackTrace();
         }
     }
-    private int currentQuestionIndex = 0;
-    private Questions quizData;
-    private Stage quizStage;
-    private VBox quizLayout;
-    private Label questionLabel;
-    private ToggleGroup group;
-    private Button nextButton;
-    private VBox optionsBox;
+
+
     private void displayQuestions(Questions quizData) {
         this.quizData = quizData;
         this.currentQuestionIndex = 0;
@@ -135,14 +143,24 @@ public class TriviaGameApp extends Application {
         this.totalQuestions = quizData.getResults().size();
 
         quizStage = new Stage();
-        quizLayout = new VBox(10);
+        quizLayout = new VBox(20); // Μεγαλύτερο spacing για καλύτερη εμφάνιση
+        quizLayout.setAlignment(Pos.CENTER); // Κεντράρισμα στοιχείων
 
         questionLabel = new Label();
-        group = new ToggleGroup();
-        optionsBox = new VBox(5);
-        nextButton = new Button("Next");
+        questionLabel.setWrapText(true);
+        questionLabel.setMaxWidth(400);
+        questionLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-alignment: center;"); // Στυλ ερώτησης
 
+        group = new ToggleGroup();
+        optionsBox = new VBox(10);
+        optionsBox.setAlignment(Pos.CENTER); // Κεντράρισμα επιλογών
+
+        nextButton = new Button("Next");
+        nextButton.setDisable(true);
+        nextButton.setStyle("-fx-font-size: 14px; -fx-padding: 10px 20px;");
         nextButton.setOnAction(e -> nextQuestion());
+
+        scoreLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: green; -fx-font-weight: bold;");
 
         quizLayout.getChildren().addAll(questionLabel, optionsBox, nextButton, scoreLabel);
 
@@ -155,6 +173,8 @@ public class TriviaGameApp extends Application {
     }
 
     private void showQuestion() {
+        System.out.println("Current Question Index: " + currentQuestionIndex + " / " + totalQuestions);
+
         if (currentQuestionIndex >= totalQuestions) {
             endQuiz();
             return;
@@ -170,45 +190,89 @@ public class TriviaGameApp extends Application {
         RadioButton correctAnswer = new RadioButton(StringEscapeUtils.unescapeHtml4(question.getCorrectAnswer()));
         correctAnswer.setUserData(true);
         correctAnswer.setToggleGroup(group);
-
+        correctAnswer.setStyle("-fx-font-size: 14px;");
+        correctAnswer.setMaxWidth(Double.MAX_VALUE);
         optionsBox.getChildren().add(correctAnswer);
 
         for (String incorrect : question.getIncorrectAnswers()) {
             RadioButton option = new RadioButton(StringEscapeUtils.unescapeHtml4(incorrect));
             option.setUserData(false);
             option.setToggleGroup(group);
+            option.setStyle("-fx-font-size: 14px;");
+            option.setMaxWidth(Double.MAX_VALUE);
             optionsBox.getChildren().add(option);
         }
 
         nextButton.setDisable(true);
-
         for (javafx.scene.Node node : optionsBox.getChildren()) {
             if (node instanceof RadioButton) {
                 ((RadioButton) node).setOnAction(e -> nextButton.setDisable(false));
             }
         }
-
-        currentQuestionIndex++;
     }
 
     private void nextQuestion() {
-        RadioButton selected = (RadioButton) group.getSelectedToggle();
+        // Αν έχουμε φτάσει στην τελευταία ερώτηση, καλούμε το endQuiz() και σταματάμε
+        if (currentQuestionIndex >= totalQuestions - 1) {
+            endQuiz();
+            return;
+        }
+
+        // Ελέγχουμε αν υπάρχει επιλεγμένη απάντηση
+        RadioButton selected = (RadioButton) optionsBox.getChildren()
+                .stream()
+                .filter(node -> node instanceof RadioButton && ((RadioButton) node).isSelected())
+                .map(node -> (RadioButton) node)
+                .findFirst()
+                .orElse(null);
+
         if (selected != null && (boolean) selected.getUserData()) {
             score++;
         }
 
         scoreLabel.setText("Score: " + score + "/" + totalQuestions);
-        showQuestion();
+
+        // Αυξάνουμε το currentQuestionIndex **μόνο αν υπάρχουν κι άλλες ερωτήσεις**
+        currentQuestionIndex++;
+
+        // Αν υπάρχουν ακόμα ερωτήσεις, δείξε την επόμενη, αλλιώς τελείωσε το παιχνίδι
+        if (currentQuestionIndex < totalQuestions) {
+            showQuestion();
+        } else {
+            endQuiz();  // Καλούμε το endQuiz() αν τελειώσαμε όλες τις ερωτήσεις
+        }
     }
 
     private void endQuiz() {
-        quizLayout.getChildren().clear();
-        Label endMessage = new Label("Quiz Over! Your score: " + score + "/" + totalQuestions);
-        Button closeButton = new Button("Close");
-        closeButton.setOnAction(e -> quizStage.close());
+        System.out.println("End of quiz! Final Score: " + score + "/" + totalQuestions);
 
-        quizLayout.getChildren().addAll(endMessage, closeButton);
+        // Σιγουρευόμαστε ότι χρησιμοποιούμε το σωστό layout
+        quizLayout.getChildren().clear();
+
+        double successRate = (totalQuestions > 0) ? ((double) score / totalQuestions) * 100 : 0;
+        gamesPlayed++;
+        totalScore += score;
+
+        Label endMessage = new Label(
+                "Quiz Over!\n" +
+                        "Your score: " + score + "/" + totalQuestions + "\n" +
+                        "Success rate: " + String.format("%.2f", successRate) + "%\n" +
+                        "Total score across games: " + totalScore + "\n" +
+                        "Games played: " + gamesPlayed
+        );
+        endMessage.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: blue;");
+        endMessage.setAlignment(Pos.CENTER);
+
+        Button restartButton = new Button("Restart");
+        restartButton.setStyle("-fx-font-size: 14px; -fx-padding: 10px 20px;");
+        restartButton.setOnAction(e -> {
+            quizStage.close();  // Κλείνουμε το quiz window
+            start(primaryStage); // Επιστροφή στην αρχική οθόνη
+        });
+
+        quizLayout.getChildren().addAll(endMessage, restartButton);
     }
+
 
 
     private void showAlert(String message) {
