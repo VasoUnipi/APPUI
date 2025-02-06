@@ -1,4 +1,5 @@
 package org.example.appui;
+import org.apache.commons.text.StringEscapeUtils;
 
 import org.example.TriviaApiClient;
 import org.example.Questions;
@@ -119,47 +120,96 @@ public class TriviaGameApp extends Application {
             e.printStackTrace();
         }
     }
-
+    private int currentQuestionIndex = 0;
+    private Questions quizData;
+    private Stage quizStage;
+    private VBox quizLayout;
+    private Label questionLabel;
+    private ToggleGroup group;
+    private Button nextButton;
+    private VBox optionsBox;
     private void displayQuestions(Questions quizData) {
-        Stage quizStage = new Stage();
-        VBox layout = new VBox(10);
-        Scene scene = new Scene(layout, 500, 400);
+        this.quizData = quizData;
+        this.currentQuestionIndex = 0;
+        this.score = 0;
+        this.totalQuestions = quizData.getResults().size();
 
-        for (Result question : quizData.getResults()) {
-            Label questionLabel = new Label(question.getQuestion());
-            ToggleGroup group = new ToggleGroup();
+        quizStage = new Stage();
+        quizLayout = new VBox(10);
 
-            RadioButton correctAnswer = new RadioButton(question.getCorrectAnswer());
-            correctAnswer.setUserData(true);
-            correctAnswer.setToggleGroup(group);
+        questionLabel = new Label();
+        group = new ToggleGroup();
+        optionsBox = new VBox(5);
+        nextButton = new Button("Next");
 
-            VBox optionsBox = new VBox(5, correctAnswer);
+        nextButton.setOnAction(e -> nextQuestion());
 
-            for (String incorrect : question.getIncorrectAnswers()) {
-                RadioButton option = new RadioButton(incorrect);
-                option.setUserData(false);
-                option.setToggleGroup(group);
-                optionsBox.getChildren().add(option);
-            }
+        quizLayout.getChildren().addAll(questionLabel, optionsBox, nextButton, scoreLabel);
 
-            Button submitButton = new Button("Submit");
-            submitButton.setOnAction(e -> {
-                RadioButton selected = (RadioButton) group.getSelectedToggle();
-                if (selected != null && (boolean) selected.getUserData()) {
-                    score++;
-                }
-                scoreLabel.setText("Score: " + score + "/" + totalQuestions);
-                optionsBox.setDisable(true);
-                submitButton.setDisable(true);
-            });
-
-            layout.getChildren().addAll(questionLabel, optionsBox, submitButton);
-        }
-
+        Scene scene = new Scene(quizLayout, 500, 400);
         quizStage.setScene(scene);
         quizStage.setTitle("Quiz Time!");
         quizStage.show();
+
+        showQuestion();
     }
+
+    private void showQuestion() {
+        if (currentQuestionIndex >= totalQuestions) {
+            endQuiz();
+            return;
+        }
+
+        Result question = quizData.getResults().get(currentQuestionIndex);
+        String questionText = StringEscapeUtils.unescapeHtml4(question.getQuestion());
+        questionLabel.setText((currentQuestionIndex + 1) + ". " + questionText);
+
+        group.getToggles().clear();
+        optionsBox.getChildren().clear();
+
+        RadioButton correctAnswer = new RadioButton(StringEscapeUtils.unescapeHtml4(question.getCorrectAnswer()));
+        correctAnswer.setUserData(true);
+        correctAnswer.setToggleGroup(group);
+
+        optionsBox.getChildren().add(correctAnswer);
+
+        for (String incorrect : question.getIncorrectAnswers()) {
+            RadioButton option = new RadioButton(StringEscapeUtils.unescapeHtml4(incorrect));
+            option.setUserData(false);
+            option.setToggleGroup(group);
+            optionsBox.getChildren().add(option);
+        }
+
+        nextButton.setDisable(true);
+
+        for (javafx.scene.Node node : optionsBox.getChildren()) {
+            if (node instanceof RadioButton) {
+                ((RadioButton) node).setOnAction(e -> nextButton.setDisable(false));
+            }
+        }
+
+        currentQuestionIndex++;
+    }
+
+    private void nextQuestion() {
+        RadioButton selected = (RadioButton) group.getSelectedToggle();
+        if (selected != null && (boolean) selected.getUserData()) {
+            score++;
+        }
+
+        scoreLabel.setText("Score: " + score + "/" + totalQuestions);
+        showQuestion();
+    }
+
+    private void endQuiz() {
+        quizLayout.getChildren().clear();
+        Label endMessage = new Label("Quiz Over! Your score: " + score + "/" + totalQuestions);
+        Button closeButton = new Button("Close");
+        closeButton.setOnAction(e -> quizStage.close());
+
+        quizLayout.getChildren().addAll(endMessage, closeButton);
+    }
+
 
     private void showAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
