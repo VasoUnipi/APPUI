@@ -1,7 +1,9 @@
 module org.example.appui {
     requires javafx.controls;
     requires javafx.fxml;
-    requires Triviapp;
+    requires API;
+    requires java.net.http;
+
 
 
     opens org.example.appui to javafx.fxml;

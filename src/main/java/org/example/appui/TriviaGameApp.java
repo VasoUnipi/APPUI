@@ -1,7 +1,7 @@
 package org.example.appui;
 
-import org.example.DemoGetRESTAPI;
-import org.example.Example;
+import org.example.TriviaApiClient;
+import org.example.Questions;
 import org.example.Result;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -11,7 +11,7 @@ import javafx.stage.Stage;
 
 public class TriviaGameApp extends Application {
 
-    private DemoGetRESTAPI apiClient = new DemoGetRESTAPI();
+    private TriviaApiClient apiClient = new TriviaApiClient();
 
     @Override
     public void start(Stage primaryStage) {
@@ -36,12 +36,12 @@ public class TriviaGameApp extends Application {
 
     private void startQuiz() {
         try {
-            Example example = apiClient.fetchResult();
+            Questions example = apiClient.fetchQuestions();
             if (example != null && example.getResults() != null) {
                 for (Result question : example.getResults()) {
                     System.out.println("Question: " + question.getQuestion());
-                    System.out.println("Correct Answer: " + question.getCorrect_answer());
-                    System.out.println("Incorrect Answers: " + question.getIncorrect_answers());
+                    System.out.println("Correct Answer: " + question.getCorrectAnswer());
+                    System.out.println("Incorrect Answers: " + question.getIncorrectAnswers());
                 }
             } else {
                 System.out.println("No questions retrieved.");
