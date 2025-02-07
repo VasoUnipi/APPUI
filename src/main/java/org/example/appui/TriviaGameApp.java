@@ -4,7 +4,7 @@ package org.example.appui;
 // Βιβλιοθήκη για διαχείριση ειδικών χαρακτήρων στο κείμενο
 import org.apache.commons.text.StringEscapeUtils;
 
-// Χρησιμοποιείται για τον καθορισμό θέσης των στοιχείων στο Scene
+// Χρησιμοποιείται για τον καθορισμό της θέσης των στοιχείων στο Scene
 import javafx.geometry.Pos;
 
 // Εισαγωγή του TriviaApiClient και των σχετικών κλάσεων (Questions.java, Result.java) που βρίσκονται στο αρχείο .jar για την ανάκτηση των ερωτήσεων
@@ -51,7 +51,7 @@ public class TriviaGameApp extends Application {
     private VBox optionsBox; // Το κουτί που περιέχει τις επιλογές απαντήσεων
     private ComboBox<String> categoryBox; // Σκοπός: Επιλογή κατηγορίας
     private ComboBox<String> difficultyBox; // Σκοπός: Επιλογή δυσκολίας
-    private ComboBox<String> typeBox; // Σκοπός: Επιλογή τύπου ερώτησης (multiple choice ή boolean)
+    private ComboBox<String> typeBox; // Σκοπός: Επιλογή τύπου ερώτησης (multiple choice ή boolean(true/false))
     private Stage primaryStage; // Σκηνή για την αρχική οθόνη
     private TextField numberField; // Πεδίο για την εισαγωγή του αριθμού των ερωτήσεων
     private Label scoreLabel; // Ετικέτα για την εμφάνιση του σκορ
@@ -112,7 +112,7 @@ public class TriviaGameApp extends Application {
 
         // Πεδίο κειμένου για την εισαγωγή αριθμού ερωτήσεων
         numberField = new TextField();
-        numberField.setPromptText("Number of Questions (1-50)");
+        numberField.setPromptText("Number of Questions (1-50)"); //Μέγιστη δυνατότητα ανάκτησης απο το trivia DB
 
         // Κουμπί εκκίνησης του κουίζ
         Button startButton = new Button("Start Quiz");
@@ -122,8 +122,8 @@ public class TriviaGameApp extends Application {
         scoreLabel = new Label("Score: 0");
 
         // Δημιουργία του layout για την αρχική οθόνη και οργάνωση των στοιχείων σε κάθετη διάταξη (VBox)
-        layout = new VBox(15, titleLabel, categoryBox, difficultyBox, typeBox, numberField, startButton, scoreLabel);
-        layout.setAlignment(Pos.CENTER); // Κεντράρισμα των στοιχείων στην οθόνη
+        //layout = new VBox(15, titleLabel, categoryBox, difficultyBox, typeBox, numberField, startButton, scoreLabel);
+        //layout.setAlignment(Pos.CENTER); // Κεντράρισμα των στοιχείων στην οθόνη
         VBox layout = new VBox(10, titleLabel, categoryBox, difficultyBox, typeBox, numberField, startButton, scoreLabel);
         layout.setAlignment(Pos.CENTER); // Κεντράρισμα των στοιχείων στην οθόνη
 
@@ -144,19 +144,19 @@ public class TriviaGameApp extends Application {
             try {
                 numQuestions = Integer.parseInt(numberField.getText());
 
-                // Αν ο αριθμός των ερωτήσεων δεν είναι έγκυρος (π.χ. είναι μικρότερος από 1 ή μεγαλύτερος από 50),
-                // εμφανίζεται μήνυμα σφάλματος και επιστρέφει.
+                // Αν ο αριθμός των ερωτήσεων δεν είναι έγκυρος (π.χ. Είναι μικρότερος από 1 ή μεγαλύτερος από 50(Μέγιστη δυνατότητα ανάκτησης απο το trivia DB)),
+                // εμφανίζεται μήνυμα σφάλματος.
                 if (numQuestions < 1 || numQuestions > 50) {
                     showAlert("Please enter a number between 1 and 50.");
                     return;
                 }
-            } catch (NumberFormatException e) {
+            } catch (NumberFormatException e) { // Έλεγχος για αριθμό
                 // Εμφανίζεται μήνυμα σφάλματος αν η τιμή δεν είναι αριθμός
                 showAlert("Invalid number of questions.");  // Ειδοποίηση για μη έγκυρη τιμή
                 return;
             }
             // Λαμβάνονται οι επιλογές του χρήστη από τα ComboBox
-            String category = categoryBox.getValue();
+            String category = categoryBox.getValue();     // Κατηγορία
             int categoryId = categoryMap.get(category);  // Εντοπίζεται το ID της κατηγορίας
             String difficulty = difficultyBox.getValue(); //Λαμβάνεται το επίπεδο δυσκολίας που έχει επιλέξει ο χρήστης
             String type = typeBox.getValue(); //Λαμβάνεται ο τύπος ερωτήσεων που έχει επιλέξει ο χρήστης
@@ -253,7 +253,7 @@ public class TriviaGameApp extends Application {
         String questionText = StringEscapeUtils.unescapeHtml4(question.getQuestion());
         questionLabel.setText((currentQuestionIndex + 1) + ". " + questionText);
 
-        // Απαλοίφονται οι προηγούμενες επιλογές (αν υπάρχουν)
+        // Απαλείφονται οι προηγούμενες επιλογές (αν υπάρχουν)
         group.getToggles().clear();
         optionsBox.getChildren().clear();
 
@@ -278,7 +278,7 @@ public class TriviaGameApp extends Application {
         // Αρχικά απενεργοποιεί το κουμπί "Next", ώστε να ενεργοποιηθεί μόνο μετά την επιλογή μιας απάντησης από το χρήστη
         nextButton.setDisable(true);
 
-        // Για κάθε κουμπί (σωστής ή λανθασμένης απάντησης), ενεργοποιεό το κουμπί "Next" όταν γίνει επιλογή της απάντησης
+        // Για κάθε κουμπί (σωστής ή λανθασμένης απάντησης), ενεργοποιεί το κουμπί "Next" όταν γίνει επιλογή της απάντησης
         for (javafx.scene.Node node : optionsBox.getChildren()) {
             if (node instanceof RadioButton) {
                 ((RadioButton) node).setOnAction(e -> nextButton.setDisable(false)); // Όταν ο χρήστης επιλέξει κάποια απάντηση, το κουμπί "Next" ενεργοποιείται
@@ -333,7 +333,7 @@ public class TriviaGameApp extends Application {
      */
 
     private void endQuiz() {
-        System.out.println("End of quiz! Final Score: " + score + "/" + totalQuestions);
+        System.out.println("End of quiz! Final Score: " + score + "/" + totalQuestions); // Στη κονσόλα
 
         // Χρήση του σωστού layout
         quizLayout.getChildren().clear();
@@ -341,7 +341,7 @@ public class TriviaGameApp extends Application {
         double successRate = (totalQuestions > 0) ? ((double) score / totalQuestions) * 100 : 0;
         gamesPlayed++;
         totalScore += score;
-        //Δημιουργείται μήνυμα με τα αποτέλεσματα
+//        Δημιουργείται μήνυμα με τα αποτέλεσματα
         Label endMessage = new Label(
                 "Quiz Over!\n" +
                         "Your score: " + score + "/" + totalQuestions + "\n" +
@@ -360,7 +360,7 @@ public class TriviaGameApp extends Application {
             start(primaryStage); // Επιστροφή στην αρχική οθόνη
         });
 
-        // Προσθέτεται το τέλος του quiz στο layout
+        // Προστίθεται το τέλος του quiz στο layout
         quizLayout.getChildren().addAll(endMessage, restartButton);
     }
 
