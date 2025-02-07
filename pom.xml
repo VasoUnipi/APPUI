@@ -51,30 +51,6 @@
             <version>17.0.6</version>
         </dependency>
 
-        <!-- JUnit 5 για εκτέλεση unit tests -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>5.10.0</version>  <!-- Ενημερωμένη έκδοση -->
-            <scope>test</scope> <!-- Χρήση μόνο για testing, δεν συμπεριλαμβάνεται στο τελικό build -->
-        </dependency>
-
-        <!-- JUnit 5 Engine, απαραίτητο για την εκτέλεση των tests -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.10.0</version>
-            <scope>test</scope> <!-- Χρησιμοποιείται μόνο κατά το testing -->
-        </dependency>
-
-        <!-- JUnit Platform Launcher (απαραίτητο για IntelliJ) -->
-        <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-launcher</artifactId>
-            <version>1.10.0</version>
-            <scope>test</scope>
-        </dependency>
-
         <!-- HttpClient: Βιβλιοθήκη για αιτήσεις σε REST APIs -->
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
