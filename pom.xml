@@ -2,34 +2,44 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <!-- Έκδοση του Maven POM που χρησιμοποιείται -->
     <modelVersion>4.0.0</modelVersion>
-
+    <!-- Βασικά στοιχεία αναγνώρισης του project -->
     <groupId>org.example</groupId>
-    <artifactId>APPUI</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    <name>APPUI</name>
+    <artifactId>APPUI</artifactId> <!-- Το όνομα της εφαρμογής -->
+    <version>1.0-SNAPSHOT</version> <!-- Η τρέχουσα έκδοση του project -->
+    <name>APPUI</name> <!-- Όνομα του project -->
 
     <properties>
+        <!-- Ορισμός της έκδοσης Java που χρησιμοποιείται -->
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <!-- Ορισμός του encoding για τη διασφάλιση σωστής ανάγνωσης χαρακτήρων -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <junit.version>5.10.2</junit.version>
+        <junit.version>5.10.2</junit.version> <!-- Ορισμός έκδοσης JUnit για εύκολη ενημέρωση -->
     </properties>
 
+    <!-- Εξαρτήσεις που απαιτούνται για το project -->
+
     <dependencies>
+
+        <!-- Βιβλιοθήκη Apache Commons Text για λειτουργίες επεξεργασίας κειμένου -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
             <version>1.10.0</version>
         </dependency>
 
+        <!-- Εξάρτηση για το API module του project -->
         <dependency>
             <groupId>org.example</groupId>
-            <!-- Ονομασία του artifact (π.χ. JAR) -->
+            <!-- Ονομασία του artifact (JAR) -->
             <artifactId>API</artifactId>
             <!-- Έκδοση του project -->
             <version>1.0-SNAPSHOT</version>
         </dependency>
+
+        <!-- Εξαρτήσεις για JavaFX, απαραίτητες για GUI εφαρμογές -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
@@ -41,18 +51,31 @@
             <version>17.0.6</version>
         </dependency>
 
+        <!-- JUnit 5 για εκτέλεση unit tests -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
+            <version>5.10.0</version>  <!-- Ενημερωμένη έκδοση -->
+            <scope>test</scope> <!-- Χρήση μόνο για testing, δεν συμπεριλαμβάνεται στο τελικό build -->
         </dependency>
+
+        <!-- JUnit 5 Engine, απαραίτητο για την εκτέλεση των tests -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>${junit.version}</version>
+            <version>5.10.0</version>
+            <scope>test</scope> <!-- Χρησιμοποιείται μόνο κατά το testing -->
+        </dependency>
+
+        <!-- JUnit Platform Launcher (απαραίτητο για IntelliJ) -->
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <version>1.10.0</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- HttpClient: Βιβλιοθήκη για αιτήσεις σε REST APIs -->
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
             <artifactId>httpclient5</artifactId>
@@ -60,33 +83,39 @@
         </dependency>
     </dependencies>
 
+    <!-- Τμήμα που αφορά τη διαδικασία κατασκευής του project -->
     <build>
         <plugins>
+
+            <!-- Maven Compiler Plugin: Ορίζει την έκδοση Java που θα χρησιμοποιηθεί -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <source>17</source>
-                    <target>17</target>
+                    <source>17</source> <!-- Χρησιμοποιεί Java 17 ως source version -->
+                    <target>17</target> <!-- Χρησιμοποιεί Java 17 ως target compilation version -->
                 </configuration>
             </plugin>
+
+            <!-- JavaFX Maven Plugin: Βοηθά στην εκτέλεση JavaFX εφαρμογών -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <executions>
                     <execution>
+
                         <!-- Default configuration for running with: mvn clean javafx:run -->
-                        <id>default-cli</id>
+                        <id>default-cli</id> <!-- Καθορίζει το προεπιλεγμένο προφίλ εκτέλεσης -->
                         <configuration>
-                            <mainClass>org.example.appui/org.example.appui.HelloApplication</mainClass>
-                            <launcher>app</launcher>
-                            <jlinkZipName>app</jlinkZipName>
-                            <jlinkImageName>app</jlinkImageName>
-                            <noManPages>true</noManPages>
-                            <stripDebug>true</stripDebug>
-                            <noHeaderFiles>true</noHeaderFiles>
+                            <mainClass>org.example.appui/org.example.appui.HelloApplication</mainClass>  <!-- Κύρια κλάση εφαρμογής -->
+                            <launcher>app</launcher> <!-- Ορίζει την εκτελέσιμη εφαρμογή -->
+                            <jlinkZipName>app</jlinkZipName> <!-- Όνομα του παραγόμενου zip αρχείου -->
+                            <jlinkImageName>app</jlinkImageName> <!-- Όνομα της παραγόμενης εικόνας -->
+                            <noManPages>true</noManPages> <!-- Δεν περιλαμβάνει manual pages -->
+                            <stripDebug>true</stripDebug> <!-- Αφαιρεί debug πληροφορίες για μικρότερο μέγεθος -->
+                            <noHeaderFiles>true</noHeaderFiles> <!-- Δεν περιλαμβάνει header αρχεία -->
                         </configuration>
                     </execution>
                 </executions>
